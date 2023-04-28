@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background = "@color/dodge_blue"
+    tools:context=".ui.demo2.ui.HomeActivity">
+
+    <ImageView
+        android:id="@+id/preview"
+        android:src="@drawable/img"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="10dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="10dp"
+        android:background = "@drawable/transparent_contour"
+        android:layout_width="240dp"
+        android:layout_height="240dp"/>
+    <LinearLayout
+        android:layout_toRightOf="@+id/preview"
+        android:layout_marginLeft="5dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="10dp"
+        android:layout_alignTop="@+id/preview"
+        android:layout_alignBottom="@+id/preview"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:orientation="vertical">
+        <ImageView
+            android:id="@+id/logimg1"
+            android:background = "@drawable/transparent_contour"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+        <ImageView
+            android:id="@+id/logimg2"
+            android:background = "@drawable/transparent_contour"
+            android:layout_marginTop="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/preview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/logs"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:orientation="horizontal" >
+            <TextView
+                android:maxLines="6"
+                android:ellipsize="end"
+                android:id="@+id/systemLogs"
+                android:textSize="14sp"
+                android:paddingLeft="16dp"
+                android:text="系统日志："
+                android:textColor="@color/black"
+                android:background = "@drawable/log_background"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"/>
+            <TextView
+                android:id="@+id/cartLogs"
+                android:textSize="14sp"
+                android:paddingLeft="16dp"
+                android:text="小车日志："
+                android:textColor="@color/black"
+                android:layout_marginLeft="5dp"
+                android:background = "@drawable/log_background"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"/>
+        </LinearLayout>
+
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/function"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:background = "@drawable/log_background"
+            android:layout_marginTop="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2.5"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp"
+            android:id="@+id/buttons"
+            android:layout_marginTop="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.5"/>
+    </LinearLayout>
+</RelativeLayout>

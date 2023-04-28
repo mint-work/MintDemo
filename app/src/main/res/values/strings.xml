@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MintDemo</string>
+    <string name="title_activity_identification_actvity">IdentificationActvity</string>
+</resources>
