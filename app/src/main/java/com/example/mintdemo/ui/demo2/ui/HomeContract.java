@@ -10,10 +10,10 @@ public interface HomeContract {
     interface View{
         void windowLogs(String src,int position);
         void pictureDisplay(Bitmap src,int position);
+        void getImage(Bitmap bitmap);
     }
     interface presenter{
         Boolean permissionRequest(Context context);
-
-        void CameraImaging();
+        void getImage();
     }
 }

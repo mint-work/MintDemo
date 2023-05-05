@@ -2,12 +2,10 @@ package com.example.mintdemo.ui.demo2.adapter;
 
 import android.content.Context;
 
-import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import com.example.mintdemo.R;
-import com.example.mintdemo.ui.demo2.base.BaseAdapter;
-import com.example.mintdemo.ui.demo2.base.BaseViewHolder;
+import com.example.mintdemo.base.RecyclerView.BaseAdapter;
+import com.example.mintdemo.base.RecyclerView.BaseViewHolder;
 
 import java.util.List;
 

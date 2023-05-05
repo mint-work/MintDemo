@@ -1,23 +1,10 @@
-package com.example.mintdemo.ui.demo2.base;
+package com.example.mintdemo.base.RecyclerView;
 
-import android.content.Context;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
-import com.example.mintdemo.R;
 
 public class BaseViewHolder extends RecyclerView.ViewHolder {
 

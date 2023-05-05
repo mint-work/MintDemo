@@ -1,4 +1,4 @@
-package com.example.mintdemo.ui.demo2.base;
+package com.example.mintdemo.base.RecyclerView;
 
 import android.content.Context;
 import android.view.LayoutInflater;

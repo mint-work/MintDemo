@@ -1,6 +1,7 @@
 package com.example.mintdemo.ui.demo2.ui;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 
 import com.example.mintdemo.base.mvp.BasePresenter;
 import com.hjq.permissions.OnPermissionCallback;
@@ -27,18 +28,13 @@ public class HomePresenter extends BasePresenter<HomeActivity,HomeModle,HomeCont
         XXPermissions.with(context)
                 // 申请单个权限
                 .permission(Permission.RECORD_AUDIO)
-                // 申请多个权限
-                //.permission(Permission.Group.CALENDAR)
-                // 申请安装包权限
-                //.permission(Permission.REQUEST_INSTALL_PACKAGES)
-                // 申请悬浮窗权限
-                //.permission(Permission.SYSTEM_ALERT_WINDOW)
-                // 申请通知栏权限
-                //.permission(Permission.NOTIFICATION_SERVICE)
-                // 申请系统设置权限
-                //.permission(Permission.WRITE_SETTINGS)
+                .permission(Permission.WRITE_EXTERNAL_STORAGE)
+                .permission(Permission.READ_EXTERNAL_STORAGE)
+                .permission(Permission.CAMERA)
+                .permission(Permission.MANAGE_EXTERNAL_STORAGE)
+
                 // 设置权限请求拦截器
-                //.interceptor(new PermissionInterceptor())
+                //.interceptor(new PermissionInterceptor()) //要记得继承
                 // 设置不触发错误检测机制
                 //.unchecked()
                 .request(new OnPermissionCallback() {
@@ -56,7 +52,12 @@ public class HomePresenter extends BasePresenter<HomeActivity,HomeModle,HomeCont
     }
 
     @Override
-    public void CameraImaging() {
+    public void getImage() {
+        //判断是否有网路摄像头
 
+        //打开系统相机
+
+        //调用图片展示函数
+        //getview().getImage();
     }
 }

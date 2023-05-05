@@ -1,6 +1,7 @@
 package com.example.mintdemo.ui.demo2.ui;
 
 import android.graphics.Bitmap;
+import android.hardware.camera2.CameraCharacteristics;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -15,6 +16,8 @@ import com.example.mintdemo.ui.demo2.adapter.ButtonsData;
 import com.example.mintdemo.ui.demo2.tool.FlexboxSpecingDecoration;
 import com.example.mintdemo.ui.demo2.tool.MeasureUtil;
 import com.example.mintdemo.ui.demo2.tool.StringTool;
+import com.hjq.toast.ToastUtils;
+import com.hjq.toast.style.WhiteToastStyle;
 
 
 import java.util.ArrayList;
@@ -46,7 +49,8 @@ public class HomeActivity extends BaseView<HomePresenter,HomeContract.View> impl
     protected void initData() {
         buttonInitialization();//底部按钮初始化
         logWindowInitialized();//控件初始化
-        p.permissionRequest(mContext);
+        p.permissionRequest(mContext);//权限获取
+
     }
 
 
@@ -74,6 +78,7 @@ public class HomeActivity extends BaseView<HomePresenter,HomeContract.View> impl
      * 日志窗口初始化
      */
     private void logWindowInitialized() {
+        ToastUtils.init(HomeActivity.this.getApplication());// 初始化吐司工具类
         systemLogs = (TextView) findViewById(R.id.systemLogs);
         cartLogs = (TextView) findViewById(R.id.cartLogs);
         HomeImg = (ImageView) findViewById(R.id.preview);
@@ -126,6 +131,11 @@ public class HomeActivity extends BaseView<HomePresenter,HomeContract.View> impl
         }else if(position==2){
             logImg2.setImageBitmap(src);
         }
+    }
+
+    @Override
+    public void getImage(Bitmap bitmap) {
+        HomeImg.setImageBitmap(bitmap);
     }
 
 }
