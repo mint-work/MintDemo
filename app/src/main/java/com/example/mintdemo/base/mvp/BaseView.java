@@ -3,6 +3,8 @@ package com.example.mintdemo.base.mvp;
 import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
+import android.view.Window;
+import android.view.WindowManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -26,6 +28,8 @@ public abstract class BaseView <P extends BasePresenter,CONTRACT> extends AppCom
         mContext = this;
         application = this.getApplication();
         Toaster.init(application);
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE); //设置无标题
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(getLayoutId());
 
         p = getPresenter(); //弱加载presenter
