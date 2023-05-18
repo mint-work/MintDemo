@@ -1,8 +1,6 @@
 package com.example.mintdemo.ui.demo2.ui;
 
 import android.graphics.Bitmap;
-import android.hardware.camera2.CameraCharacteristics;
-import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -13,11 +11,12 @@ import com.example.mintdemo.R;
 import com.example.mintdemo.base.mvp.BaseView;
 import com.example.mintdemo.ui.demo2.adapter.ButtonsAdapter;
 import com.example.mintdemo.ui.demo2.adapter.ButtonsData;
+import com.example.mintdemo.ui.demo2.tool.Camera2Utils;
+import com.example.mintdemo.ui.demo2.tool.CameraClient;
 import com.example.mintdemo.ui.demo2.tool.FlexboxSpecingDecoration;
 import com.example.mintdemo.ui.demo2.tool.MeasureUtil;
 import com.example.mintdemo.ui.demo2.tool.StringTool;
-import com.hjq.toast.ToastUtils;
-import com.hjq.toast.style.WhiteToastStyle;
+import com.hjq.permissions.OnPermissionCallback;
 
 
 import java.util.ArrayList;
@@ -25,9 +24,11 @@ import java.util.List;
 
 public class HomeActivity extends BaseView<HomePresenter,HomeContract.View> implements HomeContract.View {
     public RecyclerView buttons;
-    public ButtonsAdapter ButtonsAdapter;
+    public com.example.mintdemo.ui.demo2.adapter.ButtonsAdapter ButtonsAdapter;
     private TextView systemLogs,cartLogs;
     private ImageView HomeImg,logImg1,logImg2;
+    private Bitmap bitmap;
+    private CameraClient cameraClient;
 
     @Override
     protected int getLayoutId() {
@@ -49,7 +50,21 @@ public class HomeActivity extends BaseView<HomePresenter,HomeContract.View> impl
     protected void initData() {
         buttonInitialization();//底部按钮初始化
         logWindowInitialized();//控件初始化
-        p.permissionRequest(mContext);//权限获取
+        //权限获取
+        p.permissionRequest(mContext, new OnPermissionCallback() {
+            @Override
+            public void onGranted(List<String> permissions, boolean all) {
+               //p.getImage(mContext);
+            }
+            @Override
+            public void onDenied(List<String> permissions, boolean never) {
+                for (String number : permissions) {
+
+                }
+
+                finish();
+            }
+        });
 
     }
 
@@ -67,8 +82,19 @@ public class HomeActivity extends BaseView<HomePresenter,HomeContract.View> impl
 
         List<ButtonsData> buttonsDatas = new ArrayList<>();
         buttonsDatas.add(new ButtonsData("全自动", item -> { //添加全自动按钮
-            Log.e("1122","全自动开始运行");
+            Camera2Utils camera2Utils = new Camera2Utils(mContext);
+            camera2Utils.initCamera2();
+            camera2Utils.takePicture(new Camera2Utils.OnTakePictureCallback() {
+                @Override
+                public void onSuccess(Bitmap bitmap) {
+                    pictureDisplay(bitmap,0);
+                }
 
+                @Override
+                public void onFailure(String message) {
+
+                }
+            });
         }));
         ButtonsAdapter = new ButtonsAdapter(HomeActivity.this, R.layout.item_button, buttonsDatas);
         buttons.setAdapter(ButtonsAdapter);
@@ -78,7 +104,6 @@ public class HomeActivity extends BaseView<HomePresenter,HomeContract.View> impl
      * 日志窗口初始化
      */
     private void logWindowInitialized() {
-        ToastUtils.init(HomeActivity.this.getApplication());// 初始化吐司工具类
         systemLogs = (TextView) findViewById(R.id.systemLogs);
         cartLogs = (TextView) findViewById(R.id.cartLogs);
         HomeImg = (ImageView) findViewById(R.id.preview);
@@ -122,20 +147,20 @@ public class HomeActivity extends BaseView<HomePresenter,HomeContract.View> impl
 
     }
 
+    /**
+     * 图片展示刷新
+     * @param src
+     * @param position
+     */
     @Override
     public void pictureDisplay(Bitmap src,int position) {
         if(position==0){
             HomeImg.setImageBitmap(src);
+            bitmap = src;
         }else if(position==1){
             logImg1.setImageBitmap(src);
         }else if(position==2){
             logImg2.setImageBitmap(src);
         }
     }
-
-    @Override
-    public void getImage(Bitmap bitmap) {
-        HomeImg.setImageBitmap(bitmap);
-    }
-
 }

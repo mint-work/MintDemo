@@ -1,8 +1,6 @@
 package com.example.mintdemo.base.mvp;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 
 public abstract class BasePresenter<V extends BaseView, M extends BaseModle, CONTRACT> {
     protected M m;

@@ -9,7 +9,7 @@
 
     <ImageView
         android:id="@+id/preview"
-        android:src="@drawable/img"
+        android:src="@mipmap/img"
         android:layout_alignParentLeft="true"
         android:layout_marginLeft="10dp"
         android:layout_alignParentTop="true"

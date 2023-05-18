@@ -6,6 +6,7 @@ import android.widget.Toast;
 import com.example.mintdemo.R;
 import com.example.mintdemo.base.mvp.BaseView;
 
+
 public class LongActivity extends BaseView<LogPresenter,LoginContract.View> {
     private void initialize() {
         findViewById(R.id.main_go).setOnClickListener(v -> {

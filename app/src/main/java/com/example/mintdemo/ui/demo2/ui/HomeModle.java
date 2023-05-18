@@ -1,5 +1,6 @@
 package com.example.mintdemo.ui.demo2.ui;
 
+
 import com.example.mintdemo.base.mvp.BaseModle;
 
 public class HomeModle extends BaseModle<HomePresenter,HomeContract.Modle> {

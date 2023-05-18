@@ -1,5 +1,6 @@
 package com.example.mintdemo.ui.demo1;
 
+
 import com.example.mintdemo.base.mvp.BasePresenter;
 
 public class LogPresenter extends BasePresenter<LongActivity,LongModle,LoginContract.Presenter> {

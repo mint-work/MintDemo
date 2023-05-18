@@ -1,12 +1,13 @@
 package com.example.mintdemo.base.mvp;
 
-import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.mintdemo.R;
+import com.hjq.toast.Toaster;
+
 
 /**
  * 可以封装加载展示框
@@ -16,12 +17,15 @@ import com.example.mintdemo.R;
 public abstract class BaseView <P extends BasePresenter,CONTRACT> extends AppCompatActivity {
     protected P p;
     public Context mContext;
+    public Application application;
     protected abstract int getLayoutId();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
+        application = this.getApplication();
+        Toaster.init(application);
         setContentView(getLayoutId());
 
         p = getPresenter(); //弱加载presenter

@@ -1,8 +1,7 @@
 package com.example.mintdemo.ui.demo1;
 
-import com.example.mintdemo.base.mvp.BaseModle;
 
-import java.util.logging.Handler;
+import com.example.mintdemo.base.mvp.BaseModle;
 
 public class LongModle extends BaseModle<LogPresenter,LoginContract.Modle> {
     public LongModle(LogPresenter logPresenter) {
