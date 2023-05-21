@@ -2,9 +2,11 @@ package com.example.mintdemo.ui.demo2.ui;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.view.TextureView;
 
-import com.example.mintdemo.ui.demo2.tool.CameraClient;
 import com.hjq.permissions.OnPermissionCallback;
+
+import java.util.Map;
 
 
 public interface HomeContract {
@@ -17,6 +19,6 @@ public interface HomeContract {
     }
     interface presenter{
         Boolean permissionRequest(Context context, OnPermissionCallback onPermissionCallback);
-        CameraClient getImage(Context context);
+        void getImage(Context context, TextureView textureView);
     }
 }

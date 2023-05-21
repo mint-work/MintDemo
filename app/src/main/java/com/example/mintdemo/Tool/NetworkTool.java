@@ -656,7 +656,7 @@ public class NetworkTool {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         connectedSsid = Objects.requireNonNull(connectivityManager.getActiveNetwork());
                     } else {
-                        Toaster.showShort("无法获取无线网络信息");
+                        Log.d(TAG, "无法获取无线网络信息");
                     }
                     Log.d(TAG, "isWifiConnectedTo: connectedSsid = " + connectedSsid);
                     if (connectedSsid.equals(ssid)) {

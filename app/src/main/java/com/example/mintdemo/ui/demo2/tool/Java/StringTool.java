@@ -1,4 +1,8 @@
-package com.example.mintdemo.ui.demo2.tool;
+package com.example.mintdemo.ui.demo2.tool.Java;
+
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -16,6 +20,7 @@ public class StringTool {
      * @param s 文本代码
      * @return List<CodeVo>
      */
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public static List<String> getCodeVoList(String s) {
         if (Objects.isNull(s)) {
             return Collections.emptyList();

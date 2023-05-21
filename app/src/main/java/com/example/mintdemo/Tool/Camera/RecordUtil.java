@@ -1,4 +1,4 @@
-package com.example.mintdemo.ui.demo2.tool;
+package com.example.mintdemo.Tool.Camera;
 
 import android.annotation.SuppressLint;
 import android.graphics.SurfaceTexture;

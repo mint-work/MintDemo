@@ -1,9 +1,14 @@
 package com.example.mintdemo.ui.demo2.ui;
 
 import android.graphics.Bitmap;
+import android.hardware.camera2.CameraAccessException;
+import android.os.Build;
+import android.util.Size;
+import android.view.TextureView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -11,16 +16,21 @@ import com.example.mintdemo.R;
 import com.example.mintdemo.base.mvp.BaseView;
 import com.example.mintdemo.ui.demo2.adapter.ButtonsAdapter;
 import com.example.mintdemo.ui.demo2.adapter.ButtonsData;
-import com.example.mintdemo.ui.demo2.tool.Camera2Utils;
+import com.example.mintdemo.Tool.Camera.Camera2Utils;
 import com.example.mintdemo.ui.demo2.tool.CameraClient;
 import com.example.mintdemo.ui.demo2.tool.FlexboxSpecingDecoration;
 import com.example.mintdemo.ui.demo2.tool.MeasureUtil;
-import com.example.mintdemo.ui.demo2.tool.StringTool;
+import com.example.mintdemo.ui.demo2.tool.Java.StringTool;
 import com.hjq.permissions.OnPermissionCallback;
+import com.hjq.toast.Toaster;
 
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class HomeActivity extends BaseView<HomePresenter,HomeContract.View> implements HomeContract.View {
     public RecyclerView buttons;
@@ -28,7 +38,7 @@ public class HomeActivity extends BaseView<HomePresenter,HomeContract.View> impl
     private TextView systemLogs,cartLogs;
     private ImageView HomeImg,logImg1,logImg2;
     private Bitmap bitmap;
-    private CameraClient cameraClient;
+    private TextureView textureView;
 
     @Override
     protected int getLayoutId() {
@@ -54,14 +64,10 @@ public class HomeActivity extends BaseView<HomePresenter,HomeContract.View> impl
         p.permissionRequest(mContext, new OnPermissionCallback() {
             @Override
             public void onGranted(List<String> permissions, boolean all) {
-               //p.getImage(mContext);
+                p.getImage(mContext, textureView);
             }
             @Override
             public void onDenied(List<String> permissions, boolean never) {
-                for (String number : permissions) {
-
-                }
-
                 finish();
             }
         });
@@ -79,22 +85,23 @@ public class HomeActivity extends BaseView<HomePresenter,HomeContract.View> impl
         linearLayoutManager3.setOrientation(LinearLayoutManager.HORIZONTAL);
         buttons.setLayoutManager(linearLayoutManager3);
         buttons.addItemDecoration(new FlexboxSpecingDecoration(MeasureUtil.dpToPx(mContext, 5)));
-
         List<ButtonsData> buttonsDatas = new ArrayList<>();
         buttonsDatas.add(new ButtonsData("全自动", item -> { //添加全自动按钮
-            Camera2Utils camera2Utils = new Camera2Utils(mContext);
-            camera2Utils.initCamera2();
-            camera2Utils.takePicture(new Camera2Utils.OnTakePictureCallback() {
-                @Override
-                public void onSuccess(Bitmap bitmap) {
-                    pictureDisplay(bitmap,0);
-                }
+//            try {
+//                Camera2Utils1.getInstance().openCamera(mContext, textureView, null);
+//            } catch (CameraAccessException e) {
+//                e.printStackTrace();
+//            }
 
-                @Override
-                public void onFailure(String message) {
-
-                }
-            });
+        }));
+        buttonsDatas.add(new ButtonsData("拍照", item -> { //添加全自动按钮
+            try {
+                Camera2Utils.getInstance().takePicture(bitmap -> {
+                    pictureDisplay(bitmap,2);
+                });
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
         }));
         ButtonsAdapter = new ButtonsAdapter(HomeActivity.this, R.layout.item_button, buttonsDatas);
         buttons.setAdapter(ButtonsAdapter);
@@ -109,11 +116,13 @@ public class HomeActivity extends BaseView<HomePresenter,HomeContract.View> impl
         HomeImg = (ImageView) findViewById(R.id.preview);
         logImg1 = (ImageView) findViewById(R.id.logimg1);
         logImg2 = (ImageView) findViewById(R.id.logimg2);
+        textureView = (TextureView) findViewById(R.id.textureView);
     }
 
     /**
      * 窗口日志刷新
      */
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void windowLogs(String src,int position) {
         String s1 = null;
@@ -124,8 +133,6 @@ public class HomeActivity extends BaseView<HomePresenter,HomeContract.View> impl
         }else {
             return;
         }
-
-
         List<String> codeVoList = StringTool.getCodeVoList(s1);
         if(codeVoList.size()>5){
             List<String> s = new ArrayList<>();
@@ -149,8 +156,6 @@ public class HomeActivity extends BaseView<HomePresenter,HomeContract.View> impl
 
     /**
      * 图片展示刷新
-     * @param src
-     * @param position
      */
     @Override
     public void pictureDisplay(Bitmap src,int position) {

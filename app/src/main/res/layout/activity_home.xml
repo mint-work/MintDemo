@@ -9,14 +9,18 @@
 
     <ImageView
         android:id="@+id/preview"
-        android:src="@mipmap/img"
-        android:layout_alignParentLeft="true"
-        android:layout_marginLeft="10dp"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="10dp"
-        android:background = "@drawable/transparent_contour"
         android:layout_width="240dp"
-        android:layout_height="240dp"/>
+        android:layout_height="240dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/transparent_contour"
+        android:src="@mipmap/img" />
+    <TextureView
+        android:layout_width="240dp"
+        android:layout_height="240dp"
+        android:id="@+id/textureView"/>
     <LinearLayout
         android:layout_toRightOf="@+id/preview"
         android:layout_marginLeft="5dp"
