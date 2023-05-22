@@ -18,7 +18,9 @@ public interface HomeContract {
         void pictureDisplay(Bitmap src,int position);
     }
     interface presenter{
-        Boolean permissionRequest(Context context, OnPermissionCallback onPermissionCallback);
-        void getImage(Context context, TextureView textureView);
+        //权限申请
+        void permissionRequest(Context context, OnPermissionCallback onPermissionCallback);
+        //获取手机信息
+        void getInformation(Context context, TextureView textureView, HomePresenter.Initialize initialize);
     }
 }

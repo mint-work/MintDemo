@@ -28,8 +28,7 @@ import android.graphics.RectF;
  * +----------------------------------------------------------------------
  * （⁄(⁄ ⁄•⁄ω⁄•⁄ ⁄)⁄）
  **/
-public class BitmapCut
-{
+public class BitmapCut {
 
     /**
      * 通过资源id转化成Bitmap

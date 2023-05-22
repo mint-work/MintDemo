@@ -2,11 +2,13 @@ package com.example.mintdemo.ui.demo2.tool;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.icu.util.Output;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
@@ -28,32 +30,28 @@ public class CameraClient {
         mServerAddress = serverAddress;
         mServerPort = serverPort;
     }
-
     //启动
     public void start(Outcome outcome) {
         new Thread(() -> {
             try {
-                mSocket = new Socket(mServerAddress, mServerPort);
+                mSocket = new Socket();
+                mSocket.connect(new InetSocketAddress(mServerAddress, mServerPort), 1000);
                 mInputStream = new BufferedInputStream(mSocket.getInputStream());
                 mIsRunning = true;
-                int i = 0;
-                while (mIsRunning) {
+                for (int i = 0; i < 5; i++) {
                     Bitmap bitmap = BitmapFactory.decodeStream(mInputStream);
-                    if (bitmap != null) {
-                        outcome.succeed(bitmap);
-                    } else {
-                        Thread.sleep(50); // 延迟 1 秒钟
-                        Log.e(TAG, "正在连接第 " + i + " 次");
-                        i++;
-                        if (i > 5) { outcome.Fail("尝试连接次数超限制");return; }
+                    if(bitmap!=null){
+                        outcome.succeed();
+                       while (mIsRunning){
+                           bitmap = BitmapFactory.decodeStream(mInputStream);
+                           outcome.output(bitmap);
+                       }
+                     break;
                     }
                 }
+                outcome.fail("连接次数超限制请检查网络摄像头设置");
             } catch (IOException e) {
-                Log.e(TAG, "无法连接到服务器", e);
-                outcome.Fail("无法连接到服务器，连接超时请检查地址");
-                close();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                outcome.fail("无法连接到服务器，连接超时请检查地址");
                 close();
             } finally {
                 close();
@@ -104,9 +102,9 @@ public class CameraClient {
         }
     }
 
-    public static interface Outcome {
-        void succeed(Bitmap bitmap);
-
-        void Fail(String e);
+    public interface Outcome {
+        void succeed();
+        void fail(String e);
+        void output(Bitmap bitmap);
     }
 }

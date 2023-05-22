@@ -2,7 +2,7 @@ package com.example.mintdemo.ui.demo2.constant;
 
 public class Network {
     //网络摄像头url地址
-    public static final String TEST_URL = "192.168.0.190";
+    public static final String TEST_URL = "192.168.0.188";
     //网络摄像头端口
     public static final int TEST_PORT = 8081;
     //智能小车控制

@@ -1,55 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background = "@color/dodge_blue"
+    android:orientation="vertical"
     tools:context=".ui.demo2.ui.HomeActivity">
-
-    <ImageView
-        android:id="@+id/preview"
-        android:layout_width="240dp"
-        android:layout_height="240dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="10dp"
-        android:layout_marginTop="10dp"
-        android:background="@drawable/transparent_contour"
-        android:src="@mipmap/img" />
-    <TextureView
-        android:layout_width="240dp"
-        android:layout_height="240dp"
-        android:id="@+id/textureView"/>
     <LinearLayout
-        android:layout_toRightOf="@+id/preview"
-        android:layout_marginLeft="5dp"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="10dp"
-        android:layout_alignTop="@+id/preview"
-        android:layout_alignBottom="@+id/preview"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:orientation="vertical">
+        android:id="@+id/preview_home"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.3">
         <ImageView
-            android:id="@+id/logimg1"
-            android:background = "@drawable/transparent_contour"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
-        <ImageView
-            android:id="@+id/logimg2"
-            android:background = "@drawable/transparent_contour"
-            android:layout_marginTop="5dp"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
+            android:scaleType="centerCrop"
+            android:clickable="false"
+            android:layout_weight="1"
+            android:id="@+id/preview"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/transparent_contour"
+            android:src="@mipmap/ic_launcher_web" />
+        <TextureView
+            android:layout_marginLeft="10dp"
+            android:visibility="gone"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:id="@+id/textureView"/>
+        <GridLayout
+            android:layout_marginRight="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:rowCount="2"
+            android:columnCount="2">
+            <ImageView
+                android:clickable="false"
+                android:background="@drawable/transparent_contour"
+                android:id="@+id/logimg1"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:src="@mipmap/ic_launcher_web"
+                android:layout_row="0"
+                android:layout_column="0"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"/>
+            <ImageView
+                android:clickable="false"
+                android:layout_marginLeft="5dp"
+                android:background="@drawable/transparent_contour"
+                android:id="@+id/logimg2"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:src="@mipmap/ic_launcher_web"
+                android:layout_row="0"
+                android:layout_column="1"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"/>
+            <ImageView
+                android:clickable="false"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/transparent_contour"
+                android:id="@+id/logimg3"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:src="@mipmap/ic_launcher_web"
+                android:layout_row="1"
+                android:layout_column="0"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"/>
+            <ImageView
+                android:clickable="false"
+                android:layout_marginTop="5dp"
+                android:layout_marginLeft="5dp"
+                android:background="@drawable/transparent_contour"
+                android:id="@+id/logimg4"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:src="@mipmap/ic_launcher_web"
+                android:layout_row="1"
+                android:layout_column="1"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"/>
+        </GridLayout>
     </LinearLayout>
     <LinearLayout
         android:layout_marginTop="10dp"
-        android:layout_below="@+id/preview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.7"
         android:orientation="vertical">
 
         <LinearLayout
@@ -105,4 +149,4 @@
             android:layout_height="0dp"
             android:layout_weight="0.5"/>
     </LinearLayout>
-</RelativeLayout>
+</LinearLayout>
