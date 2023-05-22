@@ -1,21 +1,24 @@
 package com.example.mintdemo.ui.demo2.ui;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
-import android.hardware.camera2.CameraAccessException;
 import android.os.Build;
 import android.os.Handler;
+import android.text.InputType;
 import android.util.Size;
+import android.view.LayoutInflater;
 import android.view.TextureView;
-import android.widget.Toast;
+import android.view.View;
+import android.widget.NumberPicker;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 
 import com.example.mintdemo.R;
 import com.example.mintdemo.Tool.Camera.Camera2Utils;
 import com.example.mintdemo.Tool.NetworkTool;
 import com.example.mintdemo.base.mvp.BasePresenter;
+import com.example.mintdemo.ui.demo2.Interface.ProjectCallback;
 import com.example.mintdemo.ui.demo2.constant.Network;
 import com.example.mintdemo.ui.demo2.tool.CameraClient;
 import com.hjq.permissions.OnPermissionCallback;
@@ -23,16 +26,18 @@ import com.hjq.permissions.Permission;
 import com.hjq.permissions.XXPermissions;
 import com.hjq.toast.Toaster;
 import com.lxj.xpopup.XPopup;
-import com.lxj.xpopup.core.BasePopupView;
-import com.lxj.xpopup.impl.InputConfirmPopupView;
 import com.lxj.xpopup.impl.LoadingPopupView;
-import com.lxj.xpopup.interfaces.OnInputConfirmListener;
 
 public class HomePresenter extends BasePresenter<HomeActivity, HomeModle, HomeContract.presenter> implements HomeContract.presenter {
 
     public CameraClient cameraClient;
     public Camera2Utils camera2Utils;
 
+    public  final int NUMBERPLATEIDENTIFY = 1;//车牌识别
+    public  final int QRCODEIDENTIFY = 2;     //二维码识别
+    public  final int COLORIDENTIFY = 3;      //颜色识别
+    public  final int SCRIPTIDENTIFY = 4;     //文字识别
+    public  final int SHAPEIDENTIFY = 5;      //形状识别
 
     @Override
     public HomeModle getMold() {
@@ -82,7 +87,6 @@ public class HomePresenter extends BasePresenter<HomeActivity, HomeModle, HomeCo
                 setIcon(R.mipmap.ic_launcher).
                 setTitle("请选择图像获取模式").
                 setItems(items, (dialog1, which) -> {
-                    new Handler(context.getMainLooper()).post(() -> initialize.callback(which));
                     if (which == 0) {
                         connectWebcam(context, initialize);
                     } else if (which == 1) {
@@ -92,6 +96,36 @@ public class HomePresenter extends BasePresenter<HomeActivity, HomeModle, HomeCo
         AlertDialog alertDialog = builder.create();
         alertDialog.setCanceledOnTouchOutside(false);
         alertDialog.show();
+    }
+
+    /**
+     * 功能转发
+     */
+    @Override
+    public void functionForwarding(int src, Bitmap bitmap, ProjectCallback projectCallback) {
+        switch (src){
+            case NUMBERPLATEIDENTIFY:
+                m.numberPlateIdentify(bitmap, projectCallback);
+                break;
+            case QRCODEIDENTIFY:
+                m.qrCodeIdentify(bitmap, projectCallback);
+                break;
+            case COLORIDENTIFY:
+                m.colorIdentify();
+                break;
+            case SCRIPTIDENTIFY:
+                m.scriptIdentify(bitmap, projectCallback);
+                break;
+            case SHAPEIDENTIFY:
+                m.shapeIdentify();
+                break;
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @Override
+    public void LogForwarding(String src, int position) {
+        getview().windowLogs(src,position);
     }
 
     /**
@@ -114,6 +148,7 @@ public class HomePresenter extends BasePresenter<HomeActivity, HomeModle, HomeCo
                                         public void succeed() {
                                             new Handler(context.getMainLooper()).post(() -> loadingPopupView.dismiss());
                                             Toaster.showShort("网络摄像头连接成功");
+                                            new Handler(context.getMainLooper()).post(() -> initialize.callback(0));
                                         }
 
                                         @Override
@@ -155,6 +190,7 @@ public class HomePresenter extends BasePresenter<HomeActivity, HomeModle, HomeCo
             public void onSuccess() {
                 Toaster.showShort("相机初始化成功");
                 loadingPopupView.dismiss();
+                new Handler(context.getMainLooper()).post(() -> initialize.callback(1));
             }
 
             @Override

@@ -37,6 +37,7 @@ dependencies {
     implementation fileTree(include: ['*.jar', "*.aar"], dir: 'libs') //添加外部arr库说明
     //权限请求框架：https://github.com/getActivity/XXPermissions
     // 吐司框架：https://github.com/getActivity/ToastUtils
+    // 文字识别框架 https://github.com/rmtheis/tess-two
 
     implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'com.google.android.material:material:1.4.0'
@@ -50,7 +51,12 @@ dependencies {
     //图片加载库 Glide
     implementation 'com.github.bumptech.glide:glide:4.11.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
+    //车牌识别框架 https://github.com/HyperInspire/hyperlpr3-android-sdk/blob/master/README_CH.md
+    implementation 'com.github.HyperInspire:hyperlpr3-android-sdk:1.0.3'
+    //二维码识别
+    implementation 'com.google.zxing:core:3.5.1'
 
-
+    //集成百度OCR翻译 https://github.com/equationl/paddleocr4android/tree/v1.1.0
+    implementation 'com.github.equationl:paddleocr4android:v1.1.0'
 
 }
