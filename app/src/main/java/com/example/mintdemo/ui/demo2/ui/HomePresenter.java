@@ -24,7 +24,9 @@ import com.hjq.permissions.XXPermissions;
 import com.hjq.toast.Toaster;
 import com.lxj.xpopup.XPopup;
 import com.lxj.xpopup.core.BasePopupView;
+import com.lxj.xpopup.impl.InputConfirmPopupView;
 import com.lxj.xpopup.impl.LoadingPopupView;
+import com.lxj.xpopup.interfaces.OnInputConfirmListener;
 
 public class HomePresenter extends BasePresenter<HomeActivity, HomeModle, HomeContract.presenter> implements HomeContract.presenter {
 
@@ -42,7 +44,9 @@ public class HomePresenter extends BasePresenter<HomeActivity, HomeModle, HomeCo
         return this;
     }
 
-
+    /**
+     * 权限申请
+     */
     @Override
     public void permissionRequest(Context context, OnPermissionCallback onPermissionCallback) {
         String[] per = null;
@@ -68,64 +72,80 @@ public class HomePresenter extends BasePresenter<HomeActivity, HomeModle, HomeCo
                 .request(onPermissionCallback);//所有权限请求结束回调
     }
 
+    /**
+     * 图片获取渠道初始化
+     */
     @Override
-    public void getInformation(Context context, TextureView textureView,Initialize initialize) {
+    public void getInformation(Context context, TextureView textureView, Initialize initialize) {
         String[] items = {"网络摄像头", "自带相机"};
-        new AlertDialog.Builder(context).
+        AlertDialog.Builder builder = new AlertDialog.Builder(context).
                 setIcon(R.mipmap.ic_launcher).
                 setTitle("请选择图像获取模式").
                 setItems(items, (dialog1, which) -> {
                     new Handler(context.getMainLooper()).post(() -> initialize.callback(which));
-                    if (which==0){
-                        connectWebcam(context,initialize);
-                    }else if(which==1){
-                        cameraImage(context, textureView,initialize);
+                    if (which == 0) {
+                        connectWebcam(context, initialize);
+                    } else if (which == 1) {
+                        cameraImage(context, textureView, initialize);
                     }
-        }).show();
+                });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.setCanceledOnTouchOutside(false);
+        alertDialog.show();
     }
 
     /**
      * 连接网络摄像头
      */
-    private void connectWebcam(Context context,Initialize initialize) {
-        LoadingPopupView loadingPopupView = new XPopup.Builder(context).asLoading("正在连接网络摄像头");
-        loadingPopupView.show();
-        //判断是否有网路摄像头
-        if (NetworkTool.isWifi(context)) {
-            cameraClient = new CameraClient(Network.TEST_URL, Network.TEST_PORT);
-            cameraClient.start(new CameraClient.Outcome() {
-                @Override
-                public void succeed() {
-                    new Handler(context.getMainLooper()).post(() -> loadingPopupView.dismiss());
-                    Toaster.showShort("网络摄像头连接成功");
-                }
+    private void connectWebcam(Context context, Initialize initialize) {
+        new XPopup.Builder(context).asInputConfirm("请输入网络摄像头ip地址", "请输入ip地址。",
+                text -> {
+                    Network.TEST_URL = text;
+                    new XPopup.Builder(context).asInputConfirm("请输入网络摄像头端口", "请输入端口。",
+                            text1 -> {
+                                Network.TEST_PORT = Integer.parseInt(text1);
+                                LoadingPopupView loadingPopupView = new XPopup.Builder(context).asLoading("正在连接网络摄像头");
+                                loadingPopupView.show();
+                                //判断是否有网路摄像头
+                                if (NetworkTool.isWifi(context)) {
+                                    cameraClient = new CameraClient(Network.TEST_URL, Network.TEST_PORT);
+                                    cameraClient.start(new CameraClient.Outcome() {
+                                        @Override
+                                        public void succeed() {
+                                            new Handler(context.getMainLooper()).post(() -> loadingPopupView.dismiss());
+                                            Toaster.showShort("网络摄像头连接成功");
+                                        }
 
-                @Override
-                public void fail(String e) {
-                    new Handler(context.getMainLooper()).post(() -> loadingPopupView.dismiss());
-                    Toaster.showShort("网络连接摄像头失败:" + e);
-                    new Handler(context.getMainLooper()).post(() -> initialize.callback(-1));
-                }
+                                        @Override
+                                        public void fail(String e) {
+                                            new Handler(context.getMainLooper()).post(() -> loadingPopupView.dismiss());
+                                            Toaster.showShort("网络连接摄像头失败:" + e);
+                                            new Handler(context.getMainLooper()).post(() -> initialize.callback(-1));
+                                        }
 
-                @Override
-                public void output(Bitmap bitmap) {
-                    getview().pictureDisplay(bitmap, 0);//展示图片
-                }
-            });
-        }else {
-            loadingPopupView.dismiss();
-            Toaster.showShort("网络连接摄像头失败请检查网络是否连接");
-            new Handler(context.getMainLooper()).post(() -> initialize.callback(-1));
-        }
+                                        @Override
+                                        public void output(Bitmap bitmap) {
+                                            getview().pictureDisplay(bitmap, 0);//展示图片
+                                        }
+                                    });
+                                } else {
+                                    loadingPopupView.dismiss();
+                                    Toaster.showShort("网络连接摄像头失败请检查网络是否连接");
+                                    new Handler(context.getMainLooper()).post(() -> initialize.callback(-1));
+                                }
+                            })
+                            .show();
+                })
+                .show();
     }
 
     /**
      * 开启相机获取图像
      */
-    public void cameraImage(Context context, TextureView textureView,Initialize initialize) {
+    private void cameraImage(Context context, TextureView textureView, Initialize initialize) {
         LoadingPopupView loadingPopupView = new XPopup.Builder(context).asLoading("正在初始化相机");
         loadingPopupView.show();
-       camera2Utils = Camera2Utils.getInstance().
+        camera2Utils = Camera2Utils.getInstance().
                 setContext(context).
                 setCameraID(0).
                 setPreviewSize(new Size(720, 720)).
@@ -136,20 +156,20 @@ public class HomePresenter extends BasePresenter<HomeActivity, HomeModle, HomeCo
                 Toaster.showShort("相机初始化成功");
                 loadingPopupView.dismiss();
             }
+
             @Override
             public void onFailure(String e) {
-                Toaster.showShort("相机初始化失败"+e);
+                Toaster.showShort("相机初始化失败" + e);
                 loadingPopupView.dismiss();
                 new Handler(context.getMainLooper()).post(() -> initialize.callback(-1));
             }
         });
     }
+
     /**
      * 硬件初始化回调
      */
-    interface Initialize{
+    interface Initialize {
         void callback(int src);
     }
-
-
 }

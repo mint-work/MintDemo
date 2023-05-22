@@ -25,8 +25,8 @@ public class ButtonsAdapter extends BaseAdapter<ButtonsData, BaseViewHolder> {
             view.setOnClickListener(item.getClickStandard());
             item.setItem(false);
         }
-
     }
+
 }
 
 

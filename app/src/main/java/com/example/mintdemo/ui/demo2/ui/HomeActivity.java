@@ -1,17 +1,25 @@
 package com.example.mintdemo.ui.demo2.ui;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.hardware.camera2.CameraAccessException;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.util.Size;
 import android.view.TextureView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.QuickContactBadge;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -31,8 +39,11 @@ import com.example.mintdemo.ui.demo2.tool.MeasureUtil;
 import com.example.mintdemo.ui.demo2.tool.Java.StringTool;
 import com.hjq.permissions.OnPermissionCallback;
 import com.hjq.toast.Toaster;
+import com.lxj.xpopup.XPopup;
+import com.lxj.xpopup.interfaces.XPopupImageLoader;
 
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,12 +54,11 @@ import java.util.concurrent.TimeUnit;
 public class HomeActivity extends BaseView<HomePresenter, HomeContract.View> implements HomeContract.View {
     public RecyclerView buttons;
     public ButtonsAdapter ButtonsAdapter;
+    private List<ButtonsData> buttonsDatas = new ArrayList<>();
     private TextView systemLogs, cartLogs;
     private ImageView HomeImg, logImg1, logImg2, logImg3, logImg4;
     private TextureView textureView;
     private static final int REQUEST_CODE_SELECT_IMAGE = 1001;
-    private Bitmap bitmap;
-
 
     @Override
     protected int getLayoutId() {
@@ -64,7 +74,6 @@ public class HomeActivity extends BaseView<HomePresenter, HomeContract.View> imp
     public HomeContract.View getContract() {
         return this;
     }
-
 
     @Override
     protected void initData() {
@@ -82,17 +91,17 @@ public class HomeActivity extends BaseView<HomePresenter, HomeContract.View> imp
                         textureView.setVisibility(View.GONE);
                         HomeImg.setVisibility(View.VISIBLE);
                     } else {
-
                         textureView.setVisibility(View.GONE);
                         HomeImg.setVisibility(View.VISIBLE);
-                        Toaster.showShort("你可以点击图片按钮打开系统相机获取图片识别");
-                        HomeImg.setClickable(true);
-                        HomeImg.setOnClickListener(v -> {
-                            // 调用系统相册的Intent
-                            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                            intent.setType("image/*");
-                            startActivityForResult(intent, REQUEST_CODE_SELECT_IMAGE);
-                        });
+                        new Handler().postDelayed(() -> Toaster.showShort("你可以点击图片按钮打开系统相机获取图片识别"), 2000);
+                        ButtonsAdapter.addData(0, new ButtonsData("系统相册", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                                intent.setType("image/*");
+                                startActivityForResult(intent, REQUEST_CODE_SELECT_IMAGE);
+                            }
+                        }));
                     }
                 });
             }
@@ -102,9 +111,7 @@ public class HomeActivity extends BaseView<HomePresenter, HomeContract.View> imp
                 finish();
             }
         });
-
     }
-
 
     /**
      * 底部按钮初始化
@@ -115,7 +122,6 @@ public class HomeActivity extends BaseView<HomePresenter, HomeContract.View> imp
         linearLayoutManager3.setOrientation(LinearLayoutManager.HORIZONTAL);
         buttons.setLayoutManager(linearLayoutManager3);
         buttons.addItemDecoration(new FlexboxSpecingDecoration(MeasureUtil.dpToPx(mContext, 5)));
-        List<ButtonsData> buttonsDatas = new ArrayList<>();
         buttonsDatas.add(new ButtonsData("全自动", item -> { //添加全自动按钮
             Toaster.showShort("全自动按钮被点击");
         }));
@@ -127,7 +133,7 @@ public class HomeActivity extends BaseView<HomePresenter, HomeContract.View> imp
     }
 
     /**
-     * 日志窗口初始化
+     * 控件初始化
      */
     private void logWindowInitialized() {
         systemLogs = (TextView) findViewById(R.id.systemLogs);
@@ -137,7 +143,34 @@ public class HomeActivity extends BaseView<HomePresenter, HomeContract.View> imp
         logImg2 = (ImageView) findViewById(R.id.logimg2);
         logImg3 = (ImageView) findViewById(R.id.logimg3);
         logImg4 = (ImageView) findViewById(R.id.logimg4);
+        View.OnClickListener onClickListener = v -> {
+            Drawable drawable = ((ImageView) v).getDrawable();
+            if (drawable instanceof BitmapDrawable) {
+                Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+                new XPopup.Builder(mContext)
+                        .asImageViewer((ImageView) v, bitmap, new XPopupImageLoader() {
+                            @Override
+                            public void loadImage(int position, @NonNull Object uri, @NonNull ImageView imageView) {
+                                imageView.setImageBitmap((Bitmap) uri);
+                            }
+
+                            @Override
+                            public File getImageFile(@NonNull Context context, @NonNull Object uri) {
+                                return null;
+                            }
+                        })
+                        .show();
+            }
+        };
+        HomeImg.setOnClickListener(onClickListener);
+        logImg1.setOnClickListener(onClickListener);
+        logImg2.setOnClickListener(onClickListener);
+        logImg3.setOnClickListener(onClickListener);
+        logImg4.setOnClickListener(onClickListener);
+
+
         textureView = (TextureView) findViewById(R.id.textureView);
+
     }
 
     /**
@@ -172,7 +205,6 @@ public class HomeActivity extends BaseView<HomePresenter, HomeContract.View> imp
         } else if (position == 1) {
             cartLogs.setText(test + "\n" + src);
         }
-
     }
 
     /**
@@ -180,40 +212,31 @@ public class HomeActivity extends BaseView<HomePresenter, HomeContract.View> imp
      */
     @Override
     public void pictureDisplay(Bitmap src, int position) {
-        src = BitmapCut.getRadiusBitmap(src );
         if (position == 0) {
+            src = BitmapCut.ImageCrop(src, HomeImg.getHeight(), HomeImg.getWidth());
+            src = BitmapCut.getRoundedCornerBitmap(src, 10);
             HomeImg.setImageBitmap(src);
-        } else if (position == 1) {
-            logImg1.setImageBitmap(src);
-        } else if (position == 2) {
-            logImg2.setImageBitmap(src);
-        }else if (position == 3) {
-            logImg3.setImageBitmap(src);
-        } else if (position == 4) {
-            logImg4.setImageBitmap(src);
+        } else {
+            src = BitmapCut.ImageCrop(src, logImg1.getHeight(), logImg1.getWidth());
+            src = BitmapCut.getRoundedCornerBitmap(src, 15);
+            if (position == 1) {
+                logImg1.setImageBitmap(src);
+            } else if (position == 2) {
+                logImg2.setImageBitmap(src);
+            } else if (position == 3) {
+                logImg3.setImageBitmap(src);
+            } else if (position == 4) {
+                logImg4.setImageBitmap(src);
+            }
         }
     }
-    Uri imageUri;
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_SELECT_IMAGE && resultCode == RESULT_OK && data != null) {
-            // 获取用户选择的图像URI
-            if(imageUri == data.getData()){
-                return;
-            }
-            imageUri = data.getData();
-            // 加载图像并将其转换为Bitmap对象
-            Glide.with(mContext)
-                    .asBitmap()
-                    .load(imageUri)
-                    .into(new SimpleTarget<Bitmap>() {
-                        @Override
-                        public void onResourceReady(Bitmap bitmap, Transition<? super Bitmap> transition) {
-                            pictureDisplay(bitmap,0);
-                        }
-                    });
-
+            Bitmap bitmap = BitmapCut.getBitmapFromUri(mContext, data.getData());
+            pictureDisplay(bitmap, 0);
         }
     }
 
