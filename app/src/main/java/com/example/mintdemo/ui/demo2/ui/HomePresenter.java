@@ -87,6 +87,7 @@ public class HomePresenter extends BasePresenter<HomeActivity, HomeModle, HomeCo
                 setIcon(R.mipmap.ic_launcher).
                 setTitle("请选择图像获取模式").
                 setItems(items, (dialog1, which) -> {
+                    new Handler(context.getMainLooper()).post(() -> initialize.callback(which));
                     if (which == 0) {
                         connectWebcam(context, initialize);
                     } else if (which == 1) {
@@ -180,26 +181,34 @@ public class HomePresenter extends BasePresenter<HomeActivity, HomeModle, HomeCo
     private void cameraImage(Context context, TextureView textureView, Initialize initialize) {
         LoadingPopupView loadingPopupView = new XPopup.Builder(context).asLoading("正在初始化相机");
         loadingPopupView.show();
-        camera2Utils = Camera2Utils.getInstance().
-                setContext(context).
-                setCameraID(0).
-                setPreviewSize(new Size(720, 720)).
-                setTextureView(textureView);
-        camera2Utils.initCamera2(new Camera2Utils.StartupResults() {
-            @Override
-            public void onSuccess() {
-                Toaster.showShort("相机初始化成功");
-                loadingPopupView.dismiss();
-                new Handler(context.getMainLooper()).post(() -> initialize.callback(1));
-            }
 
-            @Override
-            public void onFailure(String e) {
-                Toaster.showShort("相机初始化失败" + e);
-                loadingPopupView.dismiss();
-                new Handler(context.getMainLooper()).post(() -> initialize.callback(-1));
-            }
-        });
+        Camera2Utils1.getInstance().setContext(context)
+                .setCameraID(0)
+                .setPreviewSize(new Size(1920,1080))
+                .initCamera(textureView);
+
+
+//        camera2Utils = Camera2Utils.getInstance().
+//                setContext(context).
+//                setCameraID(1).
+//                setPreviewSize(new Size(720, 720)).
+//                setTextureView(textureView);
+//        camera2Utils.initCamera2(new Camera2Utils.StartupResults() {
+//            @Override
+//            public void onSuccess() {
+//                Toaster.showShort("相机初始化成功");
+//                loadingPopupView.dismiss();
+//                new Handler(context.getMainLooper()).post(() -> initialize.callback(2));
+//            }
+//
+//            @Override
+//            public void onFailure(String e) {
+//                Toaster.showShort("相机初始化失败" + e);
+//                loadingPopupView.dismiss();
+//                camera2Utils.closeCamera();
+//                new Handler(context.getMainLooper()).post(() -> initialize.callback(-1));
+//            }
+//        });
     }
 
     /**

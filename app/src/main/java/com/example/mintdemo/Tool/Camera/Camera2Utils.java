@@ -17,6 +17,7 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
@@ -34,7 +35,9 @@ import com.hjq.toast.Toaster;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -203,6 +206,37 @@ public class Camera2Utils {
     }
 
     /**
+     * textureView 初始化
+     */
+    private void textureInitialize(Callback callback){
+        textureView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
+            @Override
+            public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
+              callback.ready();
+            }
+
+            @Override
+            public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int width, int height) {
+                // 当SurfaceTexture尺寸发生变化时，更新相应的UI布局
+            }
+
+            @Override
+            public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+                // 当SurfaceTexture销毁时，释放资源
+                return false;
+            }
+
+            @Override
+            public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {
+                // 当SurfaceTexture更新时，进行相应的处理
+            }
+        });
+    }
+    private interface Callback{
+        void ready();
+    }
+
+    /**
      * 初始化 Camera2 相机
      */
     public Camera2Utils initCamera2(StartupResults startupResults) {
@@ -219,7 +253,6 @@ public class Camera2Utils {
                 StreamConfigurationMap map = cameraManager.getCameraCharacteristics(cameraID).get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
                 previewSize = getOptimalPreviewSize(map.getOutputSizes(SurfaceTexture.class));
             }
-            imageReader = ImageReader.newInstance(previewSize.getWidth(), previewSize.getHeight(), ImageFormat.YUV_420_888, 1);
             //权限检查
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                 cameraManager.openCamera(cameraID, new CameraDevice.StateCallback() {
@@ -228,40 +261,44 @@ public class Camera2Utils {
                         cameraDevice = camera;
                         try {
                             captureBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+                            captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);    //设置相机是自动模式
                             CameraCaptureSession.StateCallback stateCallback = new CameraCaptureSession.StateCallback() {
                                 @Override
                                 public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
                                     captureSession = cameraCaptureSession;
                                     try {
-                                        captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
-                                        cameraCaptureSession.setRepeatingRequest(captureBuilder.build(), null, null);
+                                        captureSession.setRepeatingRequest(captureBuilder.build(), null, null);
                                         startupResults.onSuccess();
                                     } catch (CameraAccessException e) {
-                                        Log.e(TAG, "无法启动相机预览" + e.getMessage());
                                         startupResults.onFailure("无法启动相机预览" + e.getMessage());
                                     }
                                 }
 
                                 @Override
                                 public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
-                                    Log.e(TAG, "无法配置相机捕获会话");
-                                    startupResults.onFailure("无法配置相机捕获会话");
+                                    startupResults.onFailure("配置相机失败");
                                 }
                             };
-                            if (textureView != null) {
-                                SurfaceTexture surfaceTexture = textureView.getSurfaceTexture();
-                                surfaceTexture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
-                                Surface previewSurface = new Surface(surfaceTexture);
-                                Surface imageReaderSurface = imageReader.getSurface();
-                                captureBuilder.addTarget(previewSurface);
-                                captureBuilder.addTarget(imageReaderSurface);
-                                cameraDevice.createCaptureSession(Arrays.asList(previewSurface, imageReaderSurface), stateCallback, null);
-
-                            } else {
-                                Surface imageReaderSurface = imageReader.getSurface();
-                                captureBuilder.addTarget(imageReaderSurface);
-                                cameraDevice.createCaptureSession(Arrays.asList(imageReaderSurface), stateCallback, null);
-
+                            List<Surface> surfaces = new ArrayList<>();
+                            imageReader = ImageReader.newInstance(previewSize.getWidth(), previewSize.getHeight(), ImageFormat.YUV_420_888, 1);//相机预览参数
+                            Surface imageReaderSurface = imageReader.getSurface();
+                            surfaces.add(imageReaderSurface);
+                            if (textureView == null) {
+                                cameraDevice.createCaptureSession(surfaces, stateCallback, null);
+                            }else {
+                                textureInitialize(() -> {
+                                    SurfaceTexture surfaceTexture = textureView.getSurfaceTexture();
+                                    surfaceTexture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
+                                    Surface previewSurface = new Surface(surfaceTexture);
+                                    captureBuilder.addTarget(previewSurface);
+                                    surfaces.add(previewSurface);
+                                    try {
+                                        cameraDevice.createCaptureSession(surfaces, stateCallback, null);
+                                    } catch (CameraAccessException e) {
+                                        Log.e(TAG, "捕获服务创建失败" + e.getMessage());
+                                        startupResults.onFailure("捕获服务创建失败" + e.getMessage());
+                                    }
+                                });
                             }
                         } catch (CameraAccessException e) {
                             Log.e(TAG, "捕获服务创建失败" + e.getMessage());
@@ -272,11 +309,13 @@ public class Camera2Utils {
                     @Override
                     public void onDisconnected(@NonNull CameraDevice camera) {
                         closeCamera();
+                        startupResults.onFailure("打开相机失败");
                     }
 
                     @Override
                     public void onError(@NonNull CameraDevice camera, int error) {
                         closeCamera();
+                        startupResults.onFailure("打开相机失败");
                     }
                 }, null);
             } else {
@@ -296,15 +335,14 @@ public class Camera2Utils {
      * @param callback 拍照回调
      */
     public void takePicture( OnTakePictureCallback callback){
-        CaptureRequest captureRequest = captureBuilder.build();
         try {
-            captureSession.capture(captureRequest, new CameraCaptureSession.CaptureCallback() {
+            captureSession.capture(captureBuilder.build(), new CameraCaptureSession.CaptureCallback() {
                 @Override
                 public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
                     // 获取 ImageReader 中的图像数据
                     Image image = imageReader.acquireLatestImage();
-                    if (image == null) {
+                    if (image != null) {
                         Bitmap bitmap = new YUV_420_888toNV21().YUV_420_888ToBitmap(image);
                         image.close();
                         callback.onSuccess(bitmap);
@@ -315,11 +353,11 @@ public class Camera2Utils {
                 @Override
                 public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {
                     super.onCaptureFailed(session, request, failure);
-                    callback.onFailure("图片捕获失败" + failure.toString());
+                    callback.onFailure(failure.getReason()+"");
                 }
             }, null);
         } catch (CameraAccessException e) {
-            callback.onFailure("图片捕获失败" + e.getMessage());
+            callback.onFailure(e.getMessage());
             e.printStackTrace();
         }
     }
@@ -366,7 +404,6 @@ public class Camera2Utils {
      */
     public interface StartupResults {
         void onSuccess();
-
         void onFailure(String e);
     }
 

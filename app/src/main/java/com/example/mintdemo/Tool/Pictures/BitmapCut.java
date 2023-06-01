@@ -21,6 +21,7 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuff.Mode;
@@ -505,6 +506,26 @@ public class BitmapCut {
         context.sendBroadcast(intent);
         return true;
     }
+
+    /**
+     * 图片旋转指定角度
+     * @param bitmap
+     * @return
+     */
+    public static Bitmap rotateBitmap(Bitmap bitmap, float rotationDegrees) {
+        // 创建一个矩阵对象
+        Matrix matrix = new Matrix();
+
+        // 设置旋转
+        matrix.postRotate(rotationDegrees);
+
+        // 创建旋转后的图片
+        Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+
+        return rotatedBitmap;
+    }
+
+
 
 }
 

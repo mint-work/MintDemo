@@ -5,9 +5,12 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.os.Build;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.util.Log;
+import android.util.Size;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.ImageView;
@@ -19,13 +22,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mintdemo.R;
+import com.example.mintdemo.Tool.Camera.Camera2Utils;
+import com.example.mintdemo.Tool.Camera.YUV_420_888toNV21;
 import com.example.mintdemo.Tool.Pictures.BitmapCut;
 import com.example.mintdemo.Tool.ocr.ProcessingResults;
 import com.example.mintdemo.base.mvp.BaseView;
 import com.example.mintdemo.ui.demo2.Interface.ProjectCallback;
 import com.example.mintdemo.ui.demo2.adapter.ButtonsAdapter;
 import com.example.mintdemo.ui.demo2.adapter.ButtonsData;
-import com.example.mintdemo.Tool.Camera.Camera2Utils;
 import com.example.mintdemo.ui.demo2.tool.FlexboxSpecingDecoration;
 import com.example.mintdemo.ui.demo2.tool.MeasureUtil;
 import com.example.mintdemo.ui.demo2.tool.Java.StringTool;
@@ -38,6 +42,7 @@ import com.lxj.xpopup.interfaces.XPopupImageLoader;
 
 
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,6 +71,7 @@ public class HomeActivity extends BaseView<HomePresenter, HomeContract.View> imp
         return this;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void initData() {
         buttonInitialization();//底部按钮初始化
@@ -77,11 +83,12 @@ public class HomeActivity extends BaseView<HomePresenter, HomeContract.View> imp
             public void onGranted(List<String> permissions, boolean all) {
                 p.getInformation(mContext, textureView, src -> {
                     if (src == 0) {
-                        textureView.setVisibility(View.VISIBLE);
-                        HomeImg.setVisibility(View.GONE);
-                    } else if (src == 1) {
                         textureView.setVisibility(View.GONE);
                         HomeImg.setVisibility(View.VISIBLE);
+                    } else if (src == 1) {
+                        textureView.setVisibility(View.VISIBLE);
+                        HomeImg.setVisibility(View.GONE);
+                    } else if (src == 2){
                         ButtonsAdapter.addData(1,new ButtonsData("拍照", v -> {
                             p.camera2Utils.takePicture(new Camera2Utils.OnTakePictureCallback() {
                                 @Override
@@ -91,11 +98,11 @@ public class HomeActivity extends BaseView<HomePresenter, HomeContract.View> imp
 
                                 @Override
                                 public void onFailure(String e) {
-                                    Toaster.showShort("拍照失败");
+                                    Toaster.showShort("拍照失败"+e);
                                 }
                             });
                         }));
-                    } else {
+                    }else{
                         textureView.setVisibility(View.GONE);
                         HomeImg.setVisibility(View.VISIBLE);
                         new Handler().postDelayed(() -> Toaster.showShort("你可以点击图片按钮打开系统相机获取图片识别"), 1000);
@@ -106,6 +113,7 @@ public class HomeActivity extends BaseView<HomePresenter, HomeContract.View> imp
                         }));
                     }
                 });
+
             }
 
             @Override
@@ -119,21 +127,34 @@ public class HomeActivity extends BaseView<HomePresenter, HomeContract.View> imp
     /**
      * 底部按钮初始化
      */
+    @RequiresApi(api = Build.VERSION_CODES.N)
     private void buttonInitialization() {
         buttons = (RecyclerView) findViewById(R.id.buttons);
         LinearLayoutManager linearLayoutManager3 = new LinearLayoutManager(this);
         linearLayoutManager3.setOrientation(LinearLayoutManager.HORIZONTAL);
         buttons.setLayoutManager(linearLayoutManager3);
         buttons.addItemDecoration(new FlexboxSpecingDecoration(MeasureUtil.dpToPx(mContext, 5)));
-        buttonsDatas.add(new ButtonsData("全自动", item -> {
-            Toaster.showShort("全自动按钮被点击");
+        buttonsDatas.add(new ButtonsData("打开相机", item -> {
+            Camera2Utils1.getInstance().setContext(mContext)
+                    .setCameraID(0)
+                    .setPreviewSize(new Size(1920,1080))
+                    .initCamera(textureView);
+        }));
+        buttonsDatas.add(new ButtonsData("拍照", item -> {
+            Camera2Utils1.getInstance().takePicture(image -> {
+                bitmap = BitmapCut.rotateBitmap(image,90);
+                pictureDisplay(bitmap,2);
+            });
         }));
         buttonsDatas.add(new ButtonsData("车牌识别", item -> {
             p.functionForwarding(p.NUMBERPLATEIDENTIFY, bitmap, new ProjectCallback() {
                 @Override
                 public void success(Object src) {
                     List<String> strings = (List<String>)src;
-                    Toaster.showShort("车牌内容："+strings.get(0));
+                    for (String s:strings){
+                        windowLogs(s,0);
+                    }
+                    if(strings.size()==0) Toaster.showShort("没有识别到车牌");
                 }
                 @Override
                 public void fail(String s) {
@@ -146,7 +167,10 @@ public class HomeActivity extends BaseView<HomePresenter, HomeContract.View> imp
                 @Override
                 public void success(Object src) {
                     List<String> results = (List<String>) src;
-                    Toaster.showShort("二维码内容：" + results.size());
+                    for (String s:results){
+                        windowLogs(s,0);
+                    }
+                    if(results.size()==0) Toaster.showShort("没有识别到车牌");
                 }
 
                 @Override
@@ -166,7 +190,7 @@ public class HomeActivity extends BaseView<HomePresenter, HomeContract.View> imp
                 @Override
                 public void success(Object src) {
                     ProcessingResults results = (ProcessingResults) src;
-                    Toaster.showShort("文字识别内容：" + results.getSimpleText());
+                    windowLogs(results.getSimpleText(),0);
                     pictureDisplay(results.getBitmap1(),1);
                 }
 
@@ -281,6 +305,7 @@ public class HomeActivity extends BaseView<HomePresenter, HomeContract.View> imp
             src = BitmapCut.getRoundedCornerBitmap(src, 10);
             HomeImg.setImageBitmap(src);
         } else {
+
             src = BitmapCut.ImageCrop(src, logImg1.getHeight(), logImg1.getWidth());
             src = BitmapCut.getRoundedCornerBitmap(src, 15);
             if (position == 1) {
